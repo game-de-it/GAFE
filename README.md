@@ -42,6 +42,8 @@ Roms/PORTS/GAFE/
 
 The system menu provides `Restore StockOS`, `Restart`, and `Shut Down`. Every destructive action opens a confirmation screen with `No` selected by default.
 
+StockOS provides a screen-brightness shortcut with SELECT + Volume Up / Volume Down. GAFE preserves this shortcut and suppresses volume changes while SELECT is held, so the combination changes brightness only.
+
 ## Boxart Setup
 
 GAFE reads the RetroArch GBA playlist and its downloaded thumbnails. Connect the device to Wi-Fi before downloading thumbnails.

@@ -42,6 +42,8 @@ Roms/PORTS/GAFE/
 
 システムメニューには`Restore StockOS`、`Restart`、`Shut Down`があります。重要な操作では確認画面が開き、初期選択は`No`です。
 
+StockOSの画面輝度は、SELECTを押しながら音量アップ／音量ダウンを押すと変更できます。SELECTを押している間はGAFE側の音量変更が抑止されるため、この組み合わせでは画面輝度だけが変化します。
+
 ## Boxartの取得
 
 GAFEはRetroArchのGBAプレイリストとダウンロード済みサムネイルを利用します。事前に実機をWi-Fiへ接続してください。

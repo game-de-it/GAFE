@@ -32,6 +32,17 @@ Roms/PORTS/GAFE-OFF.sh
 Roms/PORTS/GAFE/
 ```
 
+## GAFEの更新
+
+既存のGAFEを更新する場合は、次の手順を使用します。
+
+1. GAFEでSELECTを押し、`Restore StockOS`を実行します。
+2. 新しいリリースZIPを展開します。
+3. `Roms/PORTS`内の`GAFE-ON.sh`、`GAFE-OFF.sh`、`GAFE`フォルダを置き換えます。
+4. 実機で`RA game` -> `PORTS` -> `GAFE-ON`を実行します。
+
+`/mnt/mmc/GAFE_HOME`は削除しないでください。ゲーム選択位置、音量、GAFE専用RetroArch設定、元のStockOSバックアップはこの場所から新バージョンへ引き継がれます。ROM、BIOS、セーブ、ステートセーブ、Wi-Fi接続情報は更新によって削除されません。
+
 ## 操作方法
 
 | 操作 | 機能 |
@@ -77,6 +88,7 @@ GAFE-ONは次の処理を行います。
 - 同梱`retroarch.cfg`からGAFE専用の永続設定を初期作成します。
 - 既存のグローバルシェーダー設定をバックアップし、同梱設定を適用します。
 - 既存のGBAディレクトリ用mGBA設定をバックアップし、同梱設定を適用します。
+- GAFEセッション開始時に、対応するすべてのCPU周波数ポリシーを`ondemand`ガバナーへ設定します。
 - ゲーム選択位置、音量、ログ、GAFE専用RetroArch設定を再起動やモード変更後も維持します。
 
 元のランチャーとRetroArch設定は`/mnt/mmc/GAFE_HOME/backups`へ保存されます。以後GAFE-ONを実行しても、既存バックアップは上書きしません。

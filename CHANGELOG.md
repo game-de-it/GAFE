@@ -2,6 +2,19 @@
 
 All notable changes to GAFE are documented in this file.
 
+## [0.1.2] - 2026-08-19
+
+### Added
+
+- Set supported CPU frequency policies to the `ondemand` governor at GAFE session startup.
+- Documented the update path that preserves existing GAFE state and StockOS backups.
+
+## [0.1.1] - 2026-08-18
+
+### Fixed
+
+- Reapplied the saved global shader and mGBA settings after StockOS runtime initialization.
+
 ## [0.1.0] - 2026-08-18
 
 ### Added

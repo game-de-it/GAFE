@@ -44,6 +44,29 @@ apply_gafe_setting() {
     fi
 }
 
+set_cpu_governor() {
+    policies=0
+
+    for governor_path in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do
+        [ -e "$governor_path" ] || continue
+        policies=$((policies + 1))
+        policy_dir=${governor_path%/*}
+        available="$policy_dir/scaling_available_governors"
+
+        if [ -r "$available" ] && ! grep -qw ondemand "$available"; then
+            log "Warning: ondemand is unavailable for $policy_dir"
+            continue
+        fi
+        if printf '%s\n' ondemand >"$governor_path"; then
+            log "CPU governor set to ondemand for $policy_dir"
+        else
+            log "Warning: could not set CPU governor for $policy_dir"
+        fi
+    done
+
+    [ "$policies" -gt 0 ] || log "Warning: no CPU frequency policy was found"
+}
+
 mkdir -p /mnt/vendor /mnt/mmc /mnt/data /mnt/sdcard
 mountpoint -q /mnt/vendor || \
     mount -t ext4 -o rw,noatime,nodiratime /dev/mmcblk0p6 /mnt/vendor || restore_stock
@@ -59,6 +82,7 @@ if [ -x /mnt/vendor/ctrl/mmc_new.sh ]; then
     /mnt/vendor/ctrl/mmc_new.sh add
 fi
 mountpoint -q /mnt/sdcard || mount --bind /mnt/mmc /mnt/sdcard || restore_stock
+set_cpu_governor
 
 # StockOS boot helpers may reset RetroArch's active configuration after
 # GAFE-ON runs. Reapply GAFE-owned settings after those helpers finish.

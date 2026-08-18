@@ -32,6 +32,17 @@ Roms/PORTS/GAFE-OFF.sh
 Roms/PORTS/GAFE/
 ```
 
+## Updating GAFE
+
+To update an existing GAFE installation:
+
+1. In GAFE, press SELECT and use `Restore StockOS`.
+2. Extract the new release ZIP.
+3. Replace `GAFE-ON.sh`, `GAFE-OFF.sh`, and the `GAFE` directory in `Roms/PORTS`.
+4. On the device, open `RA game` -> `PORTS` -> `GAFE-ON`.
+
+Do not delete `/mnt/mmc/GAFE_HOME`. Saved game selection, volume, GAFE-specific RetroArch settings, and the original StockOS backup remain there and are reused by the new version. ROMs, BIOS files, saves, save states, and Wi-Fi profiles are not removed by the update.
+
 ## Controls
 
 | Control | Action |
@@ -77,6 +88,7 @@ GAFE-ON performs the following operations:
 - Seeds a persistent GAFE `retroarch.cfg` from the packaged configuration.
 - Backs up and applies the packaged global shader preset.
 - Backs up and applies the packaged GBA content-directory mGBA options.
+- Sets each supported CPU frequency policy to the `ondemand` governor when a GAFE session starts.
 - Keeps game selection, volume, logs, and GAFE-specific RetroArch settings across reboots and mode changes.
 
 The original launcher and original RetroArch settings are backed up under `/mnt/mmc/GAFE_HOME/backups`. Existing backups are not overwritten by later GAFE-ON runs.

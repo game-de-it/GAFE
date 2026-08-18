@@ -51,11 +51,13 @@ Roms/PORTS/GAFE/
 | A | ゲーム起動、決定 |
 | B | 戻る |
 | START | Wi-Fi設定 |
-| SELECT | システムメニュー |
+| SELECT | システムメニューとCPUモード選択 |
 | 本体音量ボタン | OS側音量の変更と保存 |
 | SELECT + 音量ボタン | 音量を変えずに画面輝度を変更 |
 
 システムメニューには`Restore StockOS`、`Restart`、`Shut Down`があります。重要な操作では確認画面が開き、初期選択は`No`です。
+
+CPUモードは`Balanced`（`interactive`、既定値）、`Battery Saver`（`ondemand`）、`Performance`から選択できます。左右キーまたはAで変更します。選択内容は保存され、次回GAFE起動時にも再適用されます。
 
 StockOSの画面輝度は、SELECTを押しながら音量アップ／音量ダウンを押すと変更できます。SELECTを押している間はGAFE側の音量変更が抑止されるため、この組み合わせでは画面輝度だけが変化します。
 
@@ -88,7 +90,7 @@ GAFE-ONは次の処理を行います。
 - 同梱`retroarch.cfg`からGAFE専用の永続設定を初期作成します。
 - 既存のグローバルシェーダー設定をバックアップし、同梱設定を適用します。
 - 既存のGBAディレクトリ用mGBA設定をバックアップし、同梱設定を適用します。
-- GAFEセッション開始時に、対応するすべてのCPU周波数ポリシーを`ondemand`ガバナーへ設定します。
+- GAFEセッション開始時に、対応するすべてのCPU周波数ポリシーへ保存済みCPUモードを適用します。既定値は`interactive`です。
 - ゲーム選択位置、音量、ログ、GAFE専用RetroArch設定を再起動やモード変更後も維持します。
 
 元のランチャーとRetroArch設定は`/mnt/mmc/GAFE_HOME/backups`へ保存されます。以後GAFE-ONを実行しても、既存バックアップは上書きしません。

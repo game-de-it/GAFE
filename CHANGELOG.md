@@ -6,7 +6,8 @@ All notable changes to GAFE are documented in this file.
 
 ### Added
 
-- Set supported CPU frequency policies to the `ondemand` governor at GAFE session startup.
+- Added persistent `Balanced`, `Battery Saver`, and `Performance` CPU modes to the SELECT menu.
+- Use the latency-sensitive `interactive` governor as the default balanced mode.
 - Documented the update path that preserves existing GAFE state and StockOS backups.
 
 ## [0.1.1] - 2026-08-18

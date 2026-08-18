@@ -51,11 +51,13 @@ Do not delete `/mnt/mmc/GAFE_HOME`. Saved game selection, volume, GAFE-specific 
 | A | Launch or confirm |
 | B | Go back |
 | START | Open Wi-Fi settings |
-| SELECT | Open the system menu |
+| SELECT | Open the system menu and CPU mode selector |
 | Hardware volume buttons | Change and save the system volume |
 | SELECT + Volume buttons | Change screen brightness without changing volume |
 
 The system menu provides `Restore StockOS`, `Restart`, and `Shut Down`. Every destructive action opens a confirmation screen with `No` selected by default.
+
+The CPU mode selector provides `Balanced` (`interactive`, default), `Battery Saver` (`ondemand`), and `Performance`. Change it with Left / Right or A. The selection is saved and reapplied at the next GAFE startup.
 
 StockOS provides a screen-brightness shortcut with SELECT + Volume Up / Volume Down. GAFE preserves this shortcut and suppresses volume changes while SELECT is held, so the combination changes brightness only.
 
@@ -88,7 +90,7 @@ GAFE-ON performs the following operations:
 - Seeds a persistent GAFE `retroarch.cfg` from the packaged configuration.
 - Backs up and applies the packaged global shader preset.
 - Backs up and applies the packaged GBA content-directory mGBA options.
-- Sets each supported CPU frequency policy to the `ondemand` governor when a GAFE session starts.
+- Applies the saved CPU mode to each supported CPU frequency policy when a GAFE session starts; the default is `interactive`.
 - Keeps game selection, volume, logs, and GAFE-specific RetroArch settings across reboots and mode changes.
 
 The original launcher and original RetroArch settings are backed up under `/mnt/mmc/GAFE_HOME/backups`. Existing backups are not overwritten by later GAFE-ON runs.

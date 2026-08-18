@@ -27,6 +27,7 @@ RA_CONFIG = str(PERSISTENT_RA_CONFIG if PERSISTENT_RA_CONFIG.exists() else GAFE_
 GAME_CONFIG = str(GAFE_DIR / "gba-game.cfg")
 STOCK_RESTORE = Path("/mnt/mmc/Roms/PORTS/GAFE-OFF.sh")
 SESSION_ACTION_FILE = GAFE_HOME / "session-action"
+CPU_GOVERNOR_FILE = GAFE_HOME / "cpu-governor"
 STATE_FILE = GAFE_HOME / "state.json"
 VOLUME_STATE_FILE = GAFE_HOME / "volume.json"
 FONT_REGULAR = "/mnt/vendor/deep/retro/assets/fonts/mplus-1p-regular.ttf"
@@ -37,6 +38,11 @@ INK = (27, 30, 34, 255)
 MUTED = (101, 108, 114, 255)
 ACCENT = (194, 48, 52, 255)
 GREEN = (60, 170, 109, 255)
+CPU_MODES = (
+    ("interactive", "Balanced"),
+    ("ondemand", "Battery Saver"),
+    ("performance", "Performance"),
+)
 RESAMPLE = getattr(Image, "Resampling", Image).LANCZOS
 FAST_RESAMPLE = getattr(Image, "Resampling", Image).BILINEAR
 
@@ -135,6 +141,41 @@ def normalize_retroarch_volume():
         tmp = path.with_suffix(".volume.tmp")
         tmp.write_text("\n".join(lines) + "\n")
         tmp.replace(path)
+
+
+def load_cpu_mode():
+    try:
+        saved = CPU_GOVERNOR_FILE.read_text().strip()
+    except OSError:
+        saved = ""
+    names = [name for name, _ in CPU_MODES]
+    if saved in names:
+        return names.index(saved)
+    try:
+        active = Path("/sys/devices/system/cpu/cpufreq/policy0/scaling_governor").read_text().strip()
+    except OSError:
+        active = "interactive"
+    return names.index(active) if active in names else 0
+
+
+def apply_cpu_mode(mode):
+    governor = CPU_MODES[mode][0]
+    applied = False
+    for path in Path("/sys/devices/system/cpu/cpufreq").glob("policy*/scaling_governor"):
+        available = path.parent / "scaling_available_governors"
+        try:
+            if available.exists() and governor not in available.read_text().split():
+                continue
+            path.write_text(governor + "\n")
+            applied = True
+        except OSError:
+            continue
+    if applied:
+        CPU_GOVERNOR_FILE.parent.mkdir(parents=True, exist_ok=True)
+        tmp = CPU_GOVERNOR_FILE.with_suffix(".tmp")
+        tmp.write_text(governor + "\n")
+        tmp.replace(CPU_GOVERNOR_FILE)
+    return applied
 
 
 class VolumeController:
@@ -578,38 +619,48 @@ def render_keyboard(ssid, password, cursor, shift, symbols, error, wifi_on, batt
     return image
 
 
-def render_system(action, confirm, choice, wifi_on, connected, battery):
+def render_system(action, confirm, choice, cpu_mode, wifi_on, connected, battery):
     image = Image.new("RGBA", (WIDTH, HEIGHT), BG)
     draw_header(image, wifi_on, connected, battery)
     draw = ImageDraw.Draw(image)
 
     if not confirm:
-        labels = ("Restore StockOS", "Restart", "Shut Down")
+        labels = (
+            f"CPU: {CPU_MODES[cpu_mode][1]}",
+            "Restore StockOS",
+            "Restart",
+            "Shut Down",
+        )
         for index, text in enumerate(labels):
-            y = 88 + index * 100
+            y = 66 + index * 96
             selected = index == action
             draw.rounded_rectangle(
-                (128, y, 592, y + 78), 7,
+                (128, y, 592, y + 70), 7,
                 fill=(248, 249, 249, 255) if selected else (202, 206, 207, 255),
                 outline=ACCENT if selected else None, width=2,
             )
             icon_x = 194
-            icon_y = y + 39
+            icon_y = y + 35
             if index == 0:
-                draw.rounded_rectangle((170, y + 13, 218, y + 65), 5, outline=INK, width=4)
+                draw.rounded_rectangle((171, y + 14, 219, y + 56), 4, outline=INK, width=3)
+                for offset in (8, 18, 28, 38):
+                    draw.line((166, y + offset, 171, y + offset), fill=INK, width=2)
+                    draw.line((219, y + offset, 224, y + offset), fill=INK, width=2)
+            elif index == 1:
+                draw.rounded_rectangle((170, y + 9, 218, y + 61), 5, outline=INK, width=4)
                 draw.line((194, icon_y, 252, icon_y), fill=INK, width=4)
                 draw.line((239, icon_y - 13, 252, icon_y, 239, icon_y + 13), fill=INK, width=4)
-            elif index == 1:
-                draw.arc((169, y + 13, 221, y + 65), 35, 320, fill=INK, width=4)
-                draw.polygon(((216, y + 13), (230, y + 17), (219, y + 27)), fill=INK)
+            elif index == 2:
+                draw.arc((169, y + 9, 221, y + 61), 35, 320, fill=INK, width=4)
+                draw.polygon(((216, y + 9), (230, y + 13), (219, y + 23)), fill=INK)
             else:
-                draw.arc((170, y + 13, 222, y + 65), 315, 225, fill=INK, width=4)
-                draw.line((196, y + 10, 196, y + 39), fill=INK, width=4)
+                draw.arc((170, y + 9, 222, y + 61), 315, 225, fill=INK, width=4)
+                draw.line((196, y + 6, 196, y + 35), fill=INK, width=4)
             face = font(25, selected, text)
-            draw.text((280, y + 22), text, font=face, fill=INK)
+            draw.text((264, y + 18), text, font=face, fill=INK)
         return image
 
-    prompt = ("Restore StockOS?", "Restart the system?", "Shut down the system?")[action]
+    prompt = ("Restore StockOS?", "Restart the system?", "Shut down the system?")[action - 1]
     face = font(27, True, prompt)
     box = draw.textbbox((0, 0), prompt, font=face)
     draw.text(((WIDTH - box[2]) // 2, 132), prompt, font=face, fill=INK)
@@ -737,6 +788,7 @@ class App:
         self.system_confirm = False
         self.system_choice = 0
         self.system_action = 0
+        self.cpu_mode = load_cpu_mode()
         normalize_retroarch_volume()
         self.volume = VolumeController()
         self.display = Display()
@@ -933,19 +985,24 @@ class App:
             else:
                 self.mode = "main"
         elif not self.system_confirm and key == s.SDLK_UP:
-            self.system_action = (self.system_action - 1) % 3
+            self.system_action = (self.system_action - 1) % 4
         elif not self.system_confirm and key == s.SDLK_DOWN:
-            self.system_action = (self.system_action + 1) % 3
-        elif not self.system_confirm and key == s.SDLK_x:
+            self.system_action = (self.system_action + 1) % 4
+        elif not self.system_confirm and self.system_action == 0 and key in (s.SDLK_LEFT, s.SDLK_RIGHT, s.SDLK_x):
+            direction = -1 if key == s.SDLK_LEFT else 1
+            candidate = (self.cpu_mode + direction) % len(CPU_MODES)
+            if apply_cpu_mode(candidate):
+                self.cpu_mode = candidate
+        elif not self.system_confirm and self.system_action > 0 and key == s.SDLK_x:
             self.system_confirm = True
             self.system_choice = 0
         elif self.system_confirm and key in (s.SDLK_LEFT, s.SDLK_RIGHT):
             self.system_choice = 1 - self.system_choice
         elif self.system_confirm and key == s.SDLK_x:
             if self.system_choice == 1:
-                if self.system_action == 0:
+                if self.system_action == 1:
                     self.restore_stock()
-                elif self.system_action == 1:
+                elif self.system_action == 2:
                     self.request_session_action("reboot")
                 else:
                     self.request_session_action("poweroff")
@@ -961,6 +1018,7 @@ class App:
         if self.mode == "system":
             return render_system(
                 self.system_action, self.system_confirm, self.system_choice,
+                self.cpu_mode,
                 self.wifi_on, self.connected, self.battery,
             )
         return render_keyboard(

@@ -6,6 +6,7 @@ GAFE_DIR=/mnt/mmc/Roms/PORTS/GAFE
 GAFE_HOME=/mnt/mmc/GAFE_HOME
 STOCK_LAUNCHER=/etc/init.d/launcher.gafe-stock.sh
 ACTION_FILE="$GAFE_HOME/session-action"
+CPU_GOVERNOR_FILE="$GAFE_HOME/cpu-governor"
 SETTINGS_DIR="$GAFE_HOME/settings"
 RETRO_CONFIG_DIR=/mnt/vendor/deep/retro/config
 
@@ -46,6 +47,18 @@ apply_gafe_setting() {
 
 set_cpu_governor() {
     policies=0
+    desired=interactive
+
+    if [ -f "$CPU_GOVERNOR_FILE" ]; then
+        desired=$(head -n 1 "$CPU_GOVERNOR_FILE")
+    fi
+    case "$desired" in
+        interactive|ondemand|performance) ;;
+        *)
+            log "Warning: invalid saved CPU governor '$desired'; using interactive"
+            desired=interactive
+            ;;
+    esac
 
     for governor_path in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do
         [ -e "$governor_path" ] || continue
@@ -53,12 +66,12 @@ set_cpu_governor() {
         policy_dir=${governor_path%/*}
         available="$policy_dir/scaling_available_governors"
 
-        if [ -r "$available" ] && ! grep -qw ondemand "$available"; then
-            log "Warning: ondemand is unavailable for $policy_dir"
+        if [ -r "$available" ] && ! grep -qw "$desired" "$available"; then
+            log "Warning: $desired is unavailable for $policy_dir"
             continue
         fi
-        if printf '%s\n' ondemand >"$governor_path"; then
-            log "CPU governor set to ondemand for $policy_dir"
+        if printf '%s\n' "$desired" >"$governor_path"; then
+            log "CPU governor set to $desired for $policy_dir"
         else
             log "Warning: could not set CPU governor for $policy_dir"
         fi

@@ -186,10 +186,23 @@ def apply_cpu_mode(mode):
 
 class BrightnessController:
     def __init__(self):
-        self.level = self.read()
+        self.level = self.load_saved()
+        if self.level is None:
+            self.level = self.read()
+            if self.level is not None:
+                self.save(self.level)
         if self.level is not None:
-            self.save(self.level)
+            self.apply()
+            print(f"Screen brightness applied: {self.level}", flush=True)
         threading.Thread(target=self.run, name="brightness-control", daemon=True).start()
+
+    @staticmethod
+    def load_saved():
+        try:
+            value = int(BRIGHTNESS_STATE_FILE.read_text().strip())
+        except (OSError, ValueError):
+            return None
+        return value if 0 <= value <= 255 else None
 
     @staticmethod
     def read():
@@ -205,15 +218,25 @@ class BrightnessController:
         tmp = BRIGHTNESS_STATE_FILE.with_suffix(".tmp")
         tmp.write_text(f"{level}\n")
         tmp.replace(BRIGHTNESS_STATE_FILE)
+        os.sync()
+
+    def apply(self):
+        if self.level is None:
+            return
+        try:
+            BRIGHTNESS_PATH.write_text(f"{self.level}\n")
+        except OSError:
+            pass
 
     def run(self):
         while True:
-            time.sleep(0.2)
+            time.sleep(1.0)
             level = self.read()
             if level is not None and level != self.level:
                 self.level = level
                 self.save(level)
                 print(f"Screen brightness saved: {level}", flush=True)
+            self.apply()
 
 
 class VolumeController:
@@ -829,8 +852,8 @@ class App:
         self.cpu_mode = load_cpu_mode()
         normalize_retroarch_volume()
         self.volume = VolumeController()
-        self.brightness = BrightnessController()
         self.display = Display()
+        self.brightness = BrightnessController()
         self.cache_target = self.index
         self.queue_cache_warm(self.index)
 
@@ -880,6 +903,7 @@ class App:
         print(f"RetroArch exited with status {result.returncode}", flush=True)
         normalize_retroarch_volume()
         self.display.open()
+        self.brightness.apply()
         self.dirty = True
         self.last_status = 0
 

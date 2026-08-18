@@ -8,6 +8,7 @@ All notable changes to GAFE are documented in this file.
 
 - Added persistent `Balanced`, `Battery Saver`, and `Performance` CPU modes to the SELECT menu.
 - Use the latency-sensitive `interactive` governor as the default balanced mode.
+- Persist screen brightness changes across GAFE restarts.
 - Documented the update path that preserves existing GAFE state and StockOS backups.
 
 ## [0.1.1] - 2026-08-18

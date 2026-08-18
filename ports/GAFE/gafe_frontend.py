@@ -28,6 +28,8 @@ GAME_CONFIG = str(GAFE_DIR / "gba-game.cfg")
 STOCK_RESTORE = Path("/mnt/mmc/Roms/PORTS/GAFE-OFF.sh")
 SESSION_ACTION_FILE = GAFE_HOME / "session-action"
 CPU_GOVERNOR_FILE = GAFE_HOME / "cpu-governor"
+BRIGHTNESS_STATE_FILE = GAFE_HOME / "brightness"
+BRIGHTNESS_PATH = Path("/sys/devices/platform/soc/twi5/i2c-5/5-0034/axp2202-bat-power-supply.0/power_supply/axp2202-battery/brightness")
 STATE_FILE = GAFE_HOME / "state.json"
 VOLUME_STATE_FILE = GAFE_HOME / "volume.json"
 FONT_REGULAR = "/mnt/vendor/deep/retro/assets/fonts/mplus-1p-regular.ttf"
@@ -175,7 +177,43 @@ def apply_cpu_mode(mode):
         tmp = CPU_GOVERNOR_FILE.with_suffix(".tmp")
         tmp.write_text(governor + "\n")
         tmp.replace(CPU_GOVERNOR_FILE)
+        os.sync()
+        print(f"CPU mode set to {governor}", flush=True)
+    else:
+        print(f"CPU mode could not be set to {governor}", flush=True)
     return applied
+
+
+class BrightnessController:
+    def __init__(self):
+        self.level = self.read()
+        if self.level is not None:
+            self.save(self.level)
+        threading.Thread(target=self.run, name="brightness-control", daemon=True).start()
+
+    @staticmethod
+    def read():
+        try:
+            value = int(BRIGHTNESS_PATH.read_text().strip())
+        except (OSError, ValueError):
+            return None
+        return value if 0 <= value <= 255 else None
+
+    @staticmethod
+    def save(level):
+        BRIGHTNESS_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        tmp = BRIGHTNESS_STATE_FILE.with_suffix(".tmp")
+        tmp.write_text(f"{level}\n")
+        tmp.replace(BRIGHTNESS_STATE_FILE)
+
+    def run(self):
+        while True:
+            time.sleep(0.2)
+            level = self.read()
+            if level is not None and level != self.level:
+                self.level = level
+                self.save(level)
+                print(f"Screen brightness saved: {level}", flush=True)
 
 
 class VolumeController:
@@ -791,6 +829,7 @@ class App:
         self.cpu_mode = load_cpu_mode()
         normalize_retroarch_volume()
         self.volume = VolumeController()
+        self.brightness = BrightnessController()
         self.display = Display()
         self.cache_target = self.index
         self.queue_cache_warm(self.index)

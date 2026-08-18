@@ -61,6 +61,8 @@ The CPU mode selector provides `Balanced` (`interactive`, default), `Battery Sav
 
 StockOS provides a screen-brightness shortcut with SELECT + Volume Up / Volume Down. GAFE preserves this shortcut and suppresses volume changes while SELECT is held, so the combination changes brightness only.
 
+GAFE saves brightness changes made with this shortcut and restores the selected level at the next GAFE startup.
+
 ## Boxart Setup
 
 GAFE reads the RetroArch GBA playlist and its downloaded thumbnails. Connect the device to Wi-Fi before downloading thumbnails.
@@ -91,7 +93,7 @@ GAFE-ON performs the following operations:
 - Backs up and applies the packaged global shader preset.
 - Backs up and applies the packaged GBA content-directory mGBA options.
 - Applies the saved CPU mode to each supported CPU frequency policy when a GAFE session starts; the default is `interactive`.
-- Keeps game selection, volume, logs, and GAFE-specific RetroArch settings across reboots and mode changes.
+- Keeps game selection, volume, screen brightness, logs, and GAFE-specific RetroArch settings across reboots and mode changes.
 
 The original launcher and original RetroArch settings are backed up under `/mnt/mmc/GAFE_HOME/backups`. Existing backups are not overwritten by later GAFE-ON runs.
 

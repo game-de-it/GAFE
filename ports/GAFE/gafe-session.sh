@@ -7,6 +7,8 @@ GAFE_HOME=/mnt/mmc/GAFE_HOME
 STOCK_LAUNCHER=/etc/init.d/launcher.gafe-stock.sh
 ACTION_FILE="$GAFE_HOME/session-action"
 CPU_GOVERNOR_FILE="$GAFE_HOME/cpu-governor"
+BRIGHTNESS_FILE="$GAFE_HOME/brightness"
+BRIGHTNESS_PATH=/sys/devices/platform/soc/twi5/i2c-5/5-0034/axp2202-bat-power-supply.0/power_supply/axp2202-battery/brightness
 SETTINGS_DIR="$GAFE_HOME/settings"
 RETRO_CONFIG_DIR=/mnt/vendor/deep/retro/config
 
@@ -80,6 +82,27 @@ set_cpu_governor() {
     [ "$policies" -gt 0 ] || log "Warning: no CPU frequency policy was found"
 }
 
+restore_brightness() {
+    [ -f "$BRIGHTNESS_FILE" ] || return
+    [ -w "$BRIGHTNESS_PATH" ] || {
+        log "Warning: brightness control is unavailable"
+        return
+    }
+
+    brightness=$(head -n 1 "$BRIGHTNESS_FILE")
+    case "$brightness" in
+        ''|*[!0-9]*)
+            log "Warning: invalid saved brightness '$brightness'"
+            return
+            ;;
+    esac
+    if [ "$brightness" -le 255 ] && printf '%s\n' "$brightness" >"$BRIGHTNESS_PATH"; then
+        log "Screen brightness restored to $brightness"
+    else
+        log "Warning: could not restore screen brightness"
+    fi
+}
+
 mkdir -p /mnt/vendor /mnt/mmc /mnt/data /mnt/sdcard
 mountpoint -q /mnt/vendor || \
     mount -t ext4 -o rw,noatime,nodiratime /dev/mmcblk0p6 /mnt/vendor || restore_stock
@@ -96,6 +119,7 @@ if [ -x /mnt/vendor/ctrl/mmc_new.sh ]; then
 fi
 mountpoint -q /mnt/sdcard || mount --bind /mnt/mmc /mnt/sdcard || restore_stock
 set_cpu_governor
+restore_brightness
 
 # StockOS boot helpers may reset RetroArch's active configuration after
 # GAFE-ON runs. Reapply GAFE-owned settings after those helpers finish.

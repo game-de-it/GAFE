@@ -4,6 +4,10 @@
 
 GAFE（Game Boy Advance Front End）は、StockOSで動作するANBERNIC RGSPをGBA専用機として使うためのフロントエンドです。StockOS付属のRetroArchとmGBAコアを起動し、カートリッジ型カルーセル、Boxart、Wi-Fi設定、本体音量の永続化、システム操作を提供します。
 
+![ANBERNIC RGSPで動作するGAFE](docs/images/gafe-frontend.png)
+
+_実機から取得した画面です。ゲームROMとBoxartは同梱されません。_
+
 ## 必要環境
 
 - ANBERNIC RGSP StockOS v1.0.1

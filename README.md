@@ -4,6 +4,10 @@
 
 GAFE (Game Boy Advance Front End) turns the ANBERNIC RGSP running StockOS into a focused GBA handheld. It launches the StockOS build of RetroArch with the mGBA core and provides a cartridge carousel, Boxart, Wi-Fi setup, persistent hardware volume control, and system controls.
 
+![GAFE running on an ANBERNIC RGSP](docs/images/gafe-frontend.png)
+
+_Captured from the actual device. Game ROMs and Boxart are not included._
+
 ## Requirements
 
 - ANBERNIC RGSP with StockOS v1.0.1

@@ -49,7 +49,11 @@ GAFEを起動できない場合は、SSHから次を実行できます。
 - 選択位置、音量、ログ、StockOSバックアップ: `/mnt/mmc/GAFE_HOME`
 - GBA ROM: `/mnt/mmc/Roms/GBA`
 
-`retroarch.cfg`は開発機で動作確認した現在の設定を収録しています。
+`retroarch.cfg`は開発機で動作確認した現在の設定とXMB壁紙設定を収録しています。壁紙は`Roms/PORTS/GAFE/assets/xmb-wallpaper.png`に同梱されます。
+
+## 第三者素材
+
+同梱XMB壁紙はPixel Jeff氏の作品「Chill Mario 2023 ver.」を端末向けに調整したものです。公開配布前に、作者および権利者から再配布許諾を得てください。詳細は[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)を参照してください。
 
 ## リリース作成
 

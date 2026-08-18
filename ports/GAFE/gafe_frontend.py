@@ -576,16 +576,16 @@ def render_system(confirm, choice, wifi_on, connected, battery):
         draw.rounded_rectangle((170, 194, 218, 250), 5, outline=INK, width=4)
         draw.line((194, 222, 252, 222), fill=INK, width=4)
         draw.line((239, 209, 252, 222, 239, 235), fill=INK, width=4)
-        text = "StockOSへ戻す"
+        text = "Restore StockOS"
         face = font(27, True, text)
         draw.text((280, 203), text, font=face, fill=INK)
         return image
 
-    prompt = "StockOSへ戻しますか？"
+    prompt = "Restore StockOS?"
     face = font(27, True, prompt)
     box = draw.textbbox((0, 0), prompt, font=face)
     draw.text(((WIDTH - box[2]) // 2, 132), prompt, font=face, fill=INK)
-    options = ("いいえ", "はい")
+    options = ("No", "Yes")
     for index, text in enumerate(options):
         x = 171 + index * 205
         selected = index == choice

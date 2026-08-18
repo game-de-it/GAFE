@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+import array
 import ctypes
+import fcntl
 import functools
 import json
 import os
@@ -30,6 +32,7 @@ SESSION_ACTION_FILE = GAFE_HOME / "session-action"
 CPU_GOVERNOR_FILE = GAFE_HOME / "cpu-governor"
 BRIGHTNESS_STATE_FILE = GAFE_HOME / "brightness"
 BRIGHTNESS_PATH = Path("/sys/devices/platform/soc/twi5/i2c-5/5-0034/axp2202-bat-power-supply.0/power_supply/axp2202-battery/brightness")
+BRIGHTNESS_PWM = (5, 10, 20, 50, 70, 140, 200, 255)
 STATE_FILE = GAFE_HOME / "state.json"
 VOLUME_STATE_FILE = GAFE_HOME / "volume.json"
 FONT_REGULAR = "/mnt/vendor/deep/retro/assets/fonts/mplus-1p-regular.ttf"
@@ -186,6 +189,7 @@ def apply_cpu_mode(mode):
 
 class BrightnessController:
     def __init__(self):
+        self.lock = threading.RLock()
         self.level = self.load_saved()
         if self.level is None:
             self.level = self.read()
@@ -202,7 +206,7 @@ class BrightnessController:
             value = int(BRIGHTNESS_STATE_FILE.read_text().strip())
         except (OSError, ValueError):
             return None
-        return value if 0 <= value <= 255 else None
+        return value if 0 <= value < len(BRIGHTNESS_PWM) else None
 
     @staticmethod
     def read():
@@ -210,7 +214,7 @@ class BrightnessController:
             value = int(BRIGHTNESS_PATH.read_text().strip())
         except (OSError, ValueError):
             return None
-        return value if 0 <= value <= 255 else None
+        return value if 0 <= value < len(BRIGHTNESS_PWM) else None
 
     @staticmethod
     def save(level):
@@ -222,21 +226,49 @@ class BrightnessController:
 
     def apply(self):
         if self.level is None:
-            return
-        try:
-            BRIGHTNESS_PATH.write_text(f"{self.level}\n")
-        except OSError:
-            pass
+            return False
+        with self.lock:
+            fd = None
+            try:
+                fd = os.open("/dev/disp", os.O_RDWR)
+                args = array.array("L", [0, BRIGHTNESS_PWM[self.level], 0, 0])
+                fcntl.ioctl(fd, 0x102, args, True)
+                BRIGHTNESS_PATH.write_text(f"{self.level}\n")
+            except OSError:
+                return False
+            finally:
+                if fd is not None:
+                    os.close(fd)
+        return True
+
+    def change(self, delta):
+        with self.lock:
+            previous = self.level
+            if previous is None:
+                previous = self.read()
+            if previous is None:
+                return
+            self.level = max(0, min(len(BRIGHTNESS_PWM) - 1, previous + delta))
+            if self.level != previous and self.apply():
+                self.save(self.level)
+                print(f"Screen brightness set: {self.level}", flush=True)
+
+    def apply_after_display_start(self):
+        def delayed_apply():
+            time.sleep(1.0)
+            self.apply()
+
+        threading.Thread(target=delayed_apply, name="brightness-restore", daemon=True).start()
 
     def run(self):
         while True:
-            time.sleep(1.0)
-            level = self.read()
-            if level is not None and level != self.level:
-                self.level = level
-                self.save(level)
-                print(f"Screen brightness saved: {level}", flush=True)
-            self.apply()
+            time.sleep(0.2)
+            with self.lock:
+                level = self.read()
+                if level is not None and level != self.level:
+                    self.level = level
+                    self.save(level)
+                    print(f"Screen brightness saved: {level}", flush=True)
 
 
 class VolumeController:
@@ -245,7 +277,9 @@ class VolumeController:
     KEY_VOLUMEUP = 115
     KEY_SELECT = (310, 314)  # BTN_TL on RGSP; BTN_SELECT on compatible mappings.
 
-    def __init__(self):
+    def __init__(self, brightness):
+        self.brightness = brightness
+        self.frontend_active = True
         self.level = self.load_level()
         self.select_down = False
         self.apply()
@@ -300,7 +334,14 @@ class VolumeController:
         if code in self.KEY_SELECT:
             self.select_down = value != 0
             return
-        if value not in (1, 2) or self.select_down:
+        if value not in (1, 2):
+            return
+        if self.select_down:
+            if self.frontend_active and value == 1:
+                if code == self.KEY_VOLUMEUP:
+                    self.brightness.change(1)
+                elif code == self.KEY_VOLUMEDOWN:
+                    self.brightness.change(-1)
             return
         previous = self.level
         if code == self.KEY_VOLUMEUP:
@@ -310,6 +351,9 @@ class VolumeController:
         if self.level != previous:
             self.apply()
             self.save()
+
+    def set_frontend_active(self, active):
+        self.frontend_active = active
 
 
 def read_battery():
@@ -851,9 +895,9 @@ class App:
         self.system_action = 0
         self.cpu_mode = load_cpu_mode()
         normalize_retroarch_volume()
-        self.volume = VolumeController()
         self.display = Display()
         self.brightness = BrightnessController()
+        self.volume = VolumeController(self.brightness)
         self.cache_target = self.index
         self.queue_cache_warm(self.index)
 
@@ -893,6 +937,8 @@ class App:
         self.state["last_game"] = game["label"]
         save_state(self.state)
         self.display.close()
+        self.volume.set_frontend_active(False)
+        self.brightness.apply_after_display_start()
         command = [
             RETROARCH, "--config", RA_CONFIG,
             "--appendconfig", GAME_CONFIG,
@@ -900,6 +946,7 @@ class App:
         ]
         print(f"Launching: {game['label']} ({game['path']})", flush=True)
         result = subprocess.run(command, check=False)
+        self.volume.set_frontend_active(True)
         print(f"RetroArch exited with status {result.returncode}", flush=True)
         normalize_retroarch_volume()
         self.display.open()

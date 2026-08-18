@@ -59,7 +59,7 @@ Roms/PORTS/GAFE/
 
 CPUモードは`Balanced`（`interactive`、既定値）、`Battery Saver`（`ondemand`）、`Performance`から選択できます。左右キーまたはAで変更します。選択内容は保存され、次回GAFE起動時にも再適用されます。
 
-StockOSの画面輝度は、SELECTを押しながら音量アップ／音量ダウンを押すと変更できます。SELECTを押している間はGAFE側の音量変更が抑止されるため、この組み合わせでは画面輝度だけが変化します。
+StockOSの画面輝度は、SELECTを押しながら音量アップ／音量ダウンを押すと変更できます。GAFEはFE上でも同じハードウェア輝度制御を実行し、SELECTを押している間は音量変更を抑止します。この組み合わせはGAFEとRetroArchの両方で画面輝度だけを変更します。
 
 このショートカットで変更した画面輝度はGAFEが保存し、次回GAFE起動時に復元します。
 

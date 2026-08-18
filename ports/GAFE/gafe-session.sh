@@ -97,7 +97,7 @@ restore_brightness() {
             ;;
     esac
     if [ "$brightness" -le 255 ] && printf '%s\n' "$brightness" >"$BRIGHTNESS_PATH"; then
-        log "Screen brightness restored to $brightness"
+        log "Screen brightness state loaded at $brightness"
     else
         log "Warning: could not restore screen brightness"
     fi

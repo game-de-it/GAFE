@@ -59,7 +59,7 @@ The system menu provides `Restore StockOS`, `Restart`, and `Shut Down`. Every de
 
 The CPU mode selector provides `Balanced` (`interactive`, default), `Battery Saver` (`ondemand`), and `Performance`. Change it with Left / Right or A. The selection is saved and reapplied at the next GAFE startup.
 
-StockOS provides a screen-brightness shortcut with SELECT + Volume Up / Volume Down. GAFE preserves this shortcut and suppresses volume changes while SELECT is held, so the combination changes brightness only.
+StockOS provides a screen-brightness shortcut with SELECT + Volume Up / Volume Down. GAFE implements the same hardware brightness control in the frontend and suppresses volume changes while SELECT is held, so the combination changes brightness only in both GAFE and RetroArch.
 
 GAFE saves brightness changes made with this shortcut and restores the selected level at the next GAFE startup.
 

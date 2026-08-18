@@ -26,7 +26,6 @@ PERSISTENT_RA_CONFIG = GAFE_HOME / "settings" / "retroarch.cfg"
 RA_CONFIG = str(PERSISTENT_RA_CONFIG if PERSISTENT_RA_CONFIG.exists() else GAFE_DIR / "retroarch.cfg")
 GAME_CONFIG = str(GAFE_DIR / "gba-game.cfg")
 STOCK_RESTORE = Path("/mnt/mmc/Roms/PORTS/GAFE-OFF.sh")
-GAFE_MARKER = Path("/etc/gafe-mode")
 SESSION_ACTION_FILE = GAFE_HOME / "session-action"
 STATE_FILE = GAFE_HOME / "state.json"
 VOLUME_STATE_FILE = GAFE_HOME / "volume.json"
@@ -905,17 +904,7 @@ class App:
             self.system_confirm = False
             self.dirty = True
             return
-        subprocess.Popen(
-            [str(STOCK_RESTORE), "--from-fe"],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
-        deadline = time.monotonic() + 3
-        while GAFE_MARKER.exists() and time.monotonic() < deadline:
-            time.sleep(0.05)
-        self.running = False
+        self.request_session_action("restore-stock")
 
     def request_session_action(self, action):
         GAFE_HOME.mkdir(parents=True, exist_ok=True)

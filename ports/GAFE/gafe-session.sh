@@ -71,6 +71,13 @@ if [ -f "$ACTION_FILE" ]; then
 fi
 
 case "$action" in
+    restore-stock)
+        log "StockOS restoration requested from GAFE"
+        if [ -x /mnt/mmc/Roms/PORTS/GAFE-OFF.sh ]; then
+            exec /mnt/mmc/Roms/PORTS/GAFE-OFF.sh --from-fe
+        fi
+        restore_stock
+        ;;
     reboot)
         log "Restart requested from GAFE"
         sync

@@ -16,7 +16,7 @@ restore_config() {
     captured="$CONFIG_BACKUP_DIR/$name.captured"
     present="$CONFIG_BACKUP_DIR/$name.present"
     backup="$CONFIG_BACKUP_DIR/$name"
-    [ -e "$captured" ] || return
+    [ -e "$captured" ] || return 0
     if [ -e "$present" ]; then
         [ -f "$backup" ] || {
             echo "RetroArch backup is missing: $backup"
@@ -44,6 +44,7 @@ capture_gafe_setting() {
 
 mkdir -p "$LOG_DIR"
 exec >>"$LOG_FILE" 2>&1
+trap 'echo "StockOS restoration failed at line $LINENO"' ERR
 printf '\n%s StockOS restoration started\n' "$(date '+%Y-%m-%d %H:%M:%S')"
 
 [ "$(id -u)" -eq 0 ] || { echo "GAFE-OFF.sh must run as root"; exit 1; }

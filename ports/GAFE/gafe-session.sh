@@ -5,6 +5,7 @@ GAFE_MARKER=/etc/gafe-mode
 GAFE_DIR=/mnt/mmc/Roms/PORTS/GAFE
 GAFE_HOME=/mnt/mmc/GAFE_HOME
 STOCK_LAUNCHER=/etc/init.d/launcher.gafe-stock.sh
+ACTION_FILE="$GAFE_HOME/session-action"
 
 log() {
     printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
@@ -55,9 +56,31 @@ export SDL_VIDEODRIVER=mali
 export SDL_AUDIODRIVER=alsa
 
 log "Starting GAFE"
+rm -f "$ACTION_FILE"
 "$GAFE_DIR/launch.sh"
 status=$?
 log "GAFE exited with status $status"
+
+action=
+if [ -f "$ACTION_FILE" ]; then
+    action=$(head -n 1 "$ACTION_FILE")
+    rm -f "$ACTION_FILE"
+fi
+
+case "$action" in
+    reboot)
+        log "Restart requested from GAFE"
+        sync
+        systemctl reboot
+        exit 0
+        ;;
+    poweroff)
+        log "Shutdown requested from GAFE"
+        sync
+        systemctl poweroff
+        exit 0
+        ;;
+esac
 
 if [ "$status" -ne 0 ] && [ -f "$GAFE_MARKER" ]; then
     restore_stock

@@ -13,6 +13,9 @@ log() {
 
 restore_stock() {
     log "GAFE startup failed; restoring StockOS launcher"
+    if [ -x /mnt/mmc/Roms/PORTS/GAFE-OFF.sh ]; then
+        exec /mnt/mmc/Roms/PORTS/GAFE-OFF.sh --startup-failure
+    fi
     rm -f "$GAFE_MARKER" /etc/rafe-mode
     if [ -s "$STOCK_LAUNCHER" ]; then
         install -m 0755 "$STOCK_LAUNCHER" /etc/init.d/launcher.sh

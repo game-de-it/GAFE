@@ -9,6 +9,22 @@ LOG_DIR="$GAFE_HOME/logs"
 STOCK_BACKUP="$BACKUP_DIR/launcher.stock.sh"
 INSTALLED_STOCK=/etc/init.d/launcher.gafe-stock.sh
 LOG_FILE="$LOG_DIR/gafe-on.log"
+RETRO_CONFIG_DIR=/mnt/vendor/deep/retro/config
+CONFIG_BACKUP_DIR="$BACKUP_DIR/retroarch-config"
+
+backup_config() {
+    target=$1
+    name=$2
+    captured="$CONFIG_BACKUP_DIR/$name.captured"
+    present="$CONFIG_BACKUP_DIR/$name.present"
+    backup="$CONFIG_BACKUP_DIR/$name"
+    [ -e "$captured" ] && return
+    if [ -f "$target" ]; then
+        cp "$target" "$backup"
+        : >"$present"
+    fi
+    : >"$captured"
+}
 
 mkdir -p "$BACKUP_DIR" "$LOG_DIR"
 exec >>"$LOG_FILE" 2>&1
@@ -23,6 +39,8 @@ for required in \
     "$GAFE_DIR/launcher-wrapper.sh" \
     "$GAFE_DIR/retroarch.cfg" \
     "$GAFE_DIR/gba-game.cfg" \
+    "$GAFE_DIR/config/global.glslp" \
+    "$GAFE_DIR/config/mGBA/GBA.opt" \
     /usr/bin/python3 \
     /mnt/vendor/deep/retro/retroarch \
     /mnt/vendor/deep/retro/cores/mgba_libretro.so; do
@@ -33,6 +51,10 @@ done
     echo "Required Python modules are unavailable: PySDL2 and Pillow"
     exit 1
 }
+
+mkdir -p "$CONFIG_BACKUP_DIR" "$RETRO_CONFIG_DIR/mGBA"
+backup_config "$RETRO_CONFIG_DIR/global.glslp" global.glslp
+backup_config "$RETRO_CONFIG_DIR/mGBA/GBA.opt" GBA.opt
 
 if [ ! -s "$STOCK_BACKUP" ]; then
     source_launcher=
@@ -53,6 +75,8 @@ fi
 install -m 0755 "$STOCK_BACKUP" "$INSTALLED_STOCK"
 install -m 0755 "$GAFE_DIR/launcher-wrapper.sh" /etc/init.d/launcher.sh
 install -m 0755 "$GAFE_DIR/gafe-session.sh" /usr/local/sbin/gafe-session.sh
+install -m 0644 "$GAFE_DIR/config/global.glslp" "$RETRO_CONFIG_DIR/global.glslp"
+install -m 0644 "$GAFE_DIR/config/mGBA/GBA.opt" "$RETRO_CONFIG_DIR/mGBA/GBA.opt"
 chmod 0755 "$PORTS_DIR/GAFE-ON.sh" "$PORTS_DIR/GAFE-OFF.sh" "$GAFE_DIR/launch.sh"
 
 if [ ! -e "$GAFE_HOME/state.json" ] && [ -e /mnt/mmc/RAFE_HOME/gba-frontend/state.json ]; then

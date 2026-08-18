@@ -14,7 +14,7 @@ RetroArch本体、mGBAコア、ROM、BIOSは同梱しません。
 
 1. リリースZIPを展開します。
 2. `GAFE-ON.sh`、`GAFE-OFF.sh`、`GAFE`フォルダをSDカードの`Roms/PORTS`直下へ配置します。
-3. StockOSのPORTSから`GAFE-ON.sh`を実行します。
+3. 実機のStockOSで`RA game` → `PORTS` → `GAFE-ON`の順に選択して実行します。
 4. 自動再起動後、GAFEが起動します。
 
 初回導入時、端末固有のStockOSランチャーを`/mnt/mmc/GAFE_HOME/backups/launcher.stock.sh`へ退避します。このバックアップは再インストールや更新では上書きしません。
@@ -32,7 +32,7 @@ RetroArch本体、mGBAコア、ROM、BIOSは同梱しません。
 
 ## StockOSへ戻す
 
-GAFEのメイン画面でSELECTを押し、`StockOSへ戻す`を選びます。確認画面で`はい`を選ぶと、退避済みランチャーを復元して再起動します。
+GAFEのメイン画面でSELECTを押し、`Restore StockOS`を選びます。確認画面で`Yes`を選ぶと、退避済みランチャーを復元して再起動します。
 
 GAFEを起動できない場合は、SSHから次を実行できます。
 
@@ -48,10 +48,12 @@ GAFEを起動できない場合は、SSHから次を実行できます。
 
 - 配布RetroArch設定: `Roms/PORTS/GAFE/retroarch.cfg`
 - ゲーム用追加設定: `Roms/PORTS/GAFE/gba-game.cfg`
+- グローバルシェーダー設定: `Roms/PORTS/GAFE/config/global.glslp`
+- GBAディレクトリ用mGBA設定: `Roms/PORTS/GAFE/config/mGBA/GBA.opt`
 - 選択位置、音量、ログ、StockOSバックアップ: `/mnt/mmc/GAFE_HOME`
 - GBA ROM: `/mnt/mmc/Roms/GBA`
 
-`retroarch.cfg`は開発機で動作確認した現在の設定とXMB壁紙設定を収録しています。壁紙は`Roms/PORTS/GAFE/assets/xmb-wallpaper.png`に同梱されます。
+`retroarch.cfg`は開発機で動作確認した現在の設定とXMB壁紙設定を収録しています。壁紙は`Roms/PORTS/GAFE/assets/xmb-wallpaper.png`に同梱されます。GAFE-ONは既存のグローバルシェーダー設定とGBA用mGBA設定を初回だけバックアップしてから同梱設定を適用し、GAFE-OFFは導入前の設定へ復元します。
 
 ## 第三者素材
 

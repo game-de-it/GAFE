@@ -15,7 +15,8 @@ for required in \
     GAFE-ON.sh GAFE-OFF.sh \
     GAFE/gafe_frontend.py GAFE/launch.sh GAFE/gafe-session.sh \
     GAFE/launcher-wrapper.sh GAFE/retroarch.cfg GAFE/gba-game.cfg GAFE/VERSION \
-    GAFE/assets/xmb-wallpaper.png; do
+    GAFE/assets/xmb-wallpaper.png GAFE/config/global.glslp \
+    GAFE/config/mGBA/GBA.opt; do
     [ -f "$ROOT/ports/$required" ] || { echo "Missing: $required" >&2; exit 1; }
 done
 

@@ -8,6 +8,8 @@
 
 端末はStockOSランチャーと導入前のRetroArchシェーダー／GBAコア設定を復元して再起動します。
 
+GAFE内で変更した設定は`/mnt/mmc/GAFE_HOME/settings`に保存されるため、再度GAFEを有効にすると復元されます。
+
 ## SSHから
 
 ```sh

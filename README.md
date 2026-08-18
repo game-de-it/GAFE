@@ -46,14 +46,15 @@ GAFEを起動できない場合は、SSHから次を実行できます。
 
 ## 設定とデータ
 
-- 配布RetroArch設定: `Roms/PORTS/GAFE/retroarch.cfg`
+- 配布RetroArch初期設定: `Roms/PORTS/GAFE/retroarch.cfg`
 - ゲーム用追加設定: `Roms/PORTS/GAFE/gba-game.cfg`
 - グローバルシェーダー設定: `Roms/PORTS/GAFE/config/global.glslp`
 - GBAディレクトリ用mGBA設定: `Roms/PORTS/GAFE/config/mGBA/GBA.opt`
 - 選択位置、音量、ログ、StockOSバックアップ: `/mnt/mmc/GAFE_HOME`
+- GAFEで変更したRetroArch設定: `/mnt/mmc/GAFE_HOME/settings`
 - GBA ROM: `/mnt/mmc/Roms/GBA`
 
-`retroarch.cfg`は開発機で動作確認した現在の設定とXMB壁紙設定を収録しています。壁紙は`Roms/PORTS/GAFE/assets/xmb-wallpaper.png`に同梱されます。GAFE-ONは既存のグローバルシェーダー設定とGBA用mGBA設定を初回だけバックアップしてから同梱設定を適用し、GAFE-OFFは導入前の設定へ復元します。
+`retroarch.cfg`は開発機で動作確認した初期設定とXMB壁紙設定を収録しています。壁紙は`Roms/PORTS/GAFE/assets/xmb-wallpaper.png`に同梱されます。初回ONで設定を`/mnt/mmc/GAFE_HOME/settings`へコピーし、以後はこの永続コピーを使用します。OFF時にはGAFEで変更したグローバルシェーダー設定とGBA用mGBA設定を同じ場所へ保存してからStockOSの設定を復元し、次回ONで保存済みGAFE設定を再適用します。
 
 ## 第三者素材
 

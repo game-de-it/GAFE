@@ -8,6 +8,7 @@ LOG_DIR="$GAFE_HOME/logs"
 LOG_FILE="$LOG_DIR/gafe-off.log"
 RETRO_CONFIG_DIR=/mnt/vendor/deep/retro/config
 CONFIG_BACKUP_DIR="$GAFE_HOME/backups/retroarch-config"
+SETTINGS_DIR="$GAFE_HOME/settings"
 
 restore_config() {
     target=$1
@@ -27,6 +28,20 @@ restore_config() {
     fi
 }
 
+capture_gafe_setting() {
+    target=$1
+    saved=$2
+    absent=$3
+    mkdir -p "$(dirname "$saved")"
+    if [ -f "$target" ]; then
+        cp "$target" "$saved"
+        rm -f "$absent"
+    else
+        rm -f "$saved"
+        : >"$absent"
+    fi
+}
+
 mkdir -p "$LOG_DIR"
 exec >>"$LOG_FILE" 2>&1
 printf '\n%s StockOS restoration started\n' "$(date '+%Y-%m-%d %H:%M:%S')"
@@ -43,6 +58,12 @@ else
 fi
 
 mkdir -p "$RETRO_CONFIG_DIR/mGBA"
+if [ -f /etc/gafe-mode ]; then
+    capture_gafe_setting "$RETRO_CONFIG_DIR/global.glslp" \
+        "$SETTINGS_DIR/global.glslp" "$SETTINGS_DIR/global.glslp.absent"
+    capture_gafe_setting "$RETRO_CONFIG_DIR/mGBA/GBA.opt" \
+        "$SETTINGS_DIR/mGBA/GBA.opt" "$SETTINGS_DIR/mGBA/GBA.opt.absent"
+fi
 restore_config "$RETRO_CONFIG_DIR/global.glslp" global.glslp
 restore_config "$RETRO_CONFIG_DIR/mGBA/GBA.opt" GBA.opt
 install -m 0755 "$source_launcher" /etc/init.d/launcher.sh

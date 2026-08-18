@@ -11,6 +11,7 @@ INSTALLED_STOCK=/etc/init.d/launcher.gafe-stock.sh
 LOG_FILE="$LOG_DIR/gafe-on.log"
 RETRO_CONFIG_DIR=/mnt/vendor/deep/retro/config
 CONFIG_BACKUP_DIR="$BACKUP_DIR/retroarch-config"
+SETTINGS_DIR="$GAFE_HOME/settings"
 
 backup_config() {
     target=$1
@@ -24,6 +25,30 @@ backup_config() {
         : >"$present"
     fi
     : >"$captured"
+}
+
+seed_setting() {
+    source=$1
+    saved=$2
+    absent=$3
+    if [ ! -f "$saved" ] && [ ! -e "$absent" ]; then
+        cp "$source" "$saved"
+    fi
+}
+
+apply_setting() {
+    saved=$1
+    absent=$2
+    target=$3
+    if [ -e "$absent" ]; then
+        rm -f "$target"
+    else
+        [ -f "$saved" ] || {
+            echo "Saved GAFE setting is missing: $saved"
+            exit 1
+        }
+        install -m 0644 "$saved" "$target"
+    fi
 }
 
 mkdir -p "$BACKUP_DIR" "$LOG_DIR"
@@ -52,9 +77,16 @@ done
     exit 1
 }
 
-mkdir -p "$CONFIG_BACKUP_DIR" "$RETRO_CONFIG_DIR/mGBA"
+mkdir -p "$CONFIG_BACKUP_DIR" "$RETRO_CONFIG_DIR/mGBA" "$SETTINGS_DIR/mGBA"
 backup_config "$RETRO_CONFIG_DIR/global.glslp" global.glslp
 backup_config "$RETRO_CONFIG_DIR/mGBA/GBA.opt" GBA.opt
+if [ ! -f "$SETTINGS_DIR/retroarch.cfg" ]; then
+    cp "$GAFE_DIR/retroarch.cfg" "$SETTINGS_DIR/retroarch.cfg"
+fi
+seed_setting "$GAFE_DIR/config/global.glslp" \
+    "$SETTINGS_DIR/global.glslp" "$SETTINGS_DIR/global.glslp.absent"
+seed_setting "$GAFE_DIR/config/mGBA/GBA.opt" \
+    "$SETTINGS_DIR/mGBA/GBA.opt" "$SETTINGS_DIR/mGBA/GBA.opt.absent"
 
 if [ ! -s "$STOCK_BACKUP" ]; then
     source_launcher=
@@ -75,8 +107,10 @@ fi
 install -m 0755 "$STOCK_BACKUP" "$INSTALLED_STOCK"
 install -m 0755 "$GAFE_DIR/launcher-wrapper.sh" /etc/init.d/launcher.sh
 install -m 0755 "$GAFE_DIR/gafe-session.sh" /usr/local/sbin/gafe-session.sh
-install -m 0644 "$GAFE_DIR/config/global.glslp" "$RETRO_CONFIG_DIR/global.glslp"
-install -m 0644 "$GAFE_DIR/config/mGBA/GBA.opt" "$RETRO_CONFIG_DIR/mGBA/GBA.opt"
+apply_setting "$SETTINGS_DIR/global.glslp" \
+    "$SETTINGS_DIR/global.glslp.absent" "$RETRO_CONFIG_DIR/global.glslp"
+apply_setting "$SETTINGS_DIR/mGBA/GBA.opt" \
+    "$SETTINGS_DIR/mGBA/GBA.opt.absent" "$RETRO_CONFIG_DIR/mGBA/GBA.opt"
 chmod 0755 "$PORTS_DIR/GAFE-ON.sh" "$PORTS_DIR/GAFE-OFF.sh" "$GAFE_DIR/launch.sh"
 
 if [ ! -e "$GAFE_HOME/state.json" ] && [ -e /mnt/mmc/RAFE_HOME/gba-frontend/state.json ]; then

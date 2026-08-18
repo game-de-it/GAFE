@@ -44,7 +44,7 @@ mountpoint -q /mnt/sdcard || mount --bind /mnt/mmc /mnt/sdcard || restore_stock
 for required in \
     "$GAFE_DIR/launch.sh" \
     "$GAFE_DIR/gafe_frontend.py" \
-    "$GAFE_DIR/retroarch.cfg" \
+    "$GAFE_HOME/settings/retroarch.cfg" \
     /mnt/vendor/deep/retro/retroarch \
     /mnt/vendor/deep/retro/cores/mgba_libretro.so; do
     [ -e "$required" ] || restore_stock

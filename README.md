@@ -1,72 +1,148 @@
 # GAFE
 
-GAFE (Game Boy Advance Front End) は、ANBERNIC RGSPのStockOSをGBA専用機として使うためのフロントエンドです。mGBA版RetroArchを起動し、カートリッジ型カルーセル、Boxart、日本語表示、Wi-Fi設定、ゲーム中も有効な本体音量調整を提供します。
+[日本語版](README.ja.md)
 
-## 対象
+GAFE (Game Boy Advance Front End) turns the ANBERNIC RGSP running StockOS into a focused GBA handheld. It launches the StockOS build of RetroArch with the mGBA core and provides a cartridge carousel, Boxart, Wi-Fi setup, persistent hardware volume control, and system controls.
 
-- ANBERNIC RGSP StockOS
-- StockOS同梱のRetroArchと`mgba_libretro.so`
-- `/usr/bin/python3`、PySDL2、Pillowが利用できる環境
+## Requirements
 
-RetroArch本体、mGBAコア、ROM、BIOSは同梱しません。
+- ANBERNIC RGSP with StockOS v1.0.1
+- StockOS RetroArch and `mgba_libretro.so`
+- StockOS Python 3 with PySDL2 and Pillow
+- GBA ROMs in `/mnt/mmc/Roms/GBA`
 
-## インストール
+GAFE does not include RetroArch, the mGBA core, ROMs, or BIOS files.
 
-1. リリースZIPを展開します。
-2. `GAFE-ON.sh`、`GAFE-OFF.sh`、`GAFE`フォルダをSDカードの`Roms/PORTS`直下へ配置します。
-3. 実機のStockOSで`RA game` → `PORTS` → `GAFE-ON`の順に選択して実行します。
-4. 自動再起動後、GAFEが起動します。
+## Installation
 
-初回導入時、端末固有のStockOSランチャーを`/mnt/mmc/GAFE_HOME/backups/launcher.stock.sh`へ退避します。このバックアップは再インストールや更新では上書きしません。
+1. Download and extract the GAFE release ZIP.
+2. Copy `GAFE-ON.sh`, `GAFE-OFF.sh`, and the `GAFE` directory directly into `Roms/PORTS` on the SD card.
+3. On the device, open `RA game` -> `PORTS` -> `GAFE-ON`.
+4. The device reboots automatically and starts GAFE.
 
-## 操作
+The resulting layout must be:
 
-- 十字キー左右: ゲーム選択
-- A: ゲーム起動、決定
-- B: 戻る
-- START: Wi-Fi画面
-- SELECT: システム画面
-- 本体音量ボタン: OS側音量の変更と保存
+```text
+Roms/PORTS/GAFE-ON.sh
+Roms/PORTS/GAFE-OFF.sh
+Roms/PORTS/GAFE/
+```
 
-システム画面からStockOSへの復帰、OSの再起動、シャットダウンを実行できます。各操作には確認画面があります。
+## Controls
 
-## StockOSへ戻す
+| Control | Action |
+|---|---|
+| D-pad Left / Right | Select a game |
+| A | Launch or confirm |
+| B | Go back |
+| START | Open Wi-Fi settings |
+| SELECT | Open the system menu |
+| Hardware volume buttons | Change and save the system volume |
 
-GAFEのメイン画面でSELECTを押し、`Restore StockOS`を選びます。確認画面で`Yes`を選ぶと、退避済みランチャーを復元して再起動します。
+The system menu provides `Restore StockOS`, `Restart`, and `Shut Down`. Every destructive action opens a confirmation screen with `No` selected by default.
 
-GAFEを起動できない場合は、SSHから次を実行できます。
+## Boxart Setup
+
+GAFE reads the RetroArch GBA playlist and its downloaded thumbnails. Connect the device to Wi-Fi before downloading thumbnails.
+
+### 1. Create the playlist
+
+1. Launch a game.
+2. Open the RetroArch menu.
+3. Select `Import Contents` -> `Scan Directory` -> `Parent Directory` -> `GBA` -> `Scan This Directory`.
+
+### 2. Download playlist thumbnails
+
+1. Open the RetroArch `Main Menu`.
+2. Select `Online Updater` -> `Playlist Thumbnails Updater`.
+3. Select `Nintendo - Game Boy / Advance`.
+
+Return to GAFE after the download completes. Available Boxart is fitted into the cartridge label area without cropping.
+
+## What GAFE-ON Changes
+
+GAFE-ON performs the following operations:
+
+- Backs up the device's original StockOS launcher once.
+- Installs a small launcher wrapper and GAFE session script.
+- Enables GAFE mode with `/etc/gafe-mode`.
+- Creates persistent data under `/mnt/mmc/GAFE_HOME`.
+- Seeds a persistent GAFE `retroarch.cfg` from the packaged configuration.
+- Backs up and applies the packaged global shader preset.
+- Backs up and applies the packaged GBA content-directory mGBA options.
+- Keeps game selection, volume, logs, and GAFE-specific RetroArch settings across reboots and mode changes.
+
+The original launcher and original RetroArch settings are backed up under `/mnt/mmc/GAFE_HOME/backups`. Existing backups are not overwritten by later GAFE-ON runs.
+
+## Persistent GAFE Settings
+
+Settings changed while using GAFE are stored under:
+
+```text
+/mnt/mmc/GAFE_HOME/settings
+```
+
+This includes the active `retroarch.cfg`, global shader preset, and GBA content-directory mGBA options. GAFE-OFF saves the current GAFE shader and core settings before restoring StockOS. The next GAFE-ON reapplies the saved GAFE settings instead of resetting them to package defaults.
+
+## Restoring StockOS
+
+Open the GAFE system menu with SELECT, choose `Restore StockOS`, then confirm with `Yes`. The device restores StockOS and reboots automatically.
+
+GAFE-OFF restores:
+
+- The original StockOS launcher.
+- The global shader preset that existed before the first GAFE-ON.
+- The GBA content-directory mGBA options that existed before the first GAFE-ON.
+- Normal StockOS startup behavior.
+
+GAFE-OFF does not delete:
+
+- ROMs, BIOS files, saves, or save states.
+- Wi-Fi profiles.
+- The GAFE package in `Roms/PORTS`.
+- Persistent GAFE settings in `/mnt/mmc/GAFE_HOME`.
+
+To enable GAFE again, use `RA game` -> `PORTS` -> `GAFE-ON` from StockOS.
+
+If the frontend cannot be opened, restore StockOS over SSH:
 
 ```sh
 /mnt/mmc/Roms/PORTS/GAFE-OFF.sh
 ```
 
-復旧後もROM、セーブ、Wi-Fi設定、GAFE本体と設定データは削除されません。再度有効にする場合はPORTSから`GAFE-ON.sh`を実行します。
+See [Recovery](docs/RECOVERY.md) for additional recovery details.
 
-より詳しい復旧手順は[docs/RECOVERY.md](docs/RECOVERY.md)を参照してください。
+## Packaged Settings
 
-## 設定とデータ
+| File | Purpose |
+|---|---|
+| `GAFE/retroarch.cfg` | Initial GAFE RetroArch configuration |
+| `GAFE/gba-game.cfg` | Per-launch volume input overrides |
+| `GAFE/config/global.glslp` | Initial global shader preset |
+| `GAFE/config/mGBA/GBA.opt` | Initial GBA content-directory mGBA options |
+| `GAFE/assets/xmb-wallpaper.png` | XMB wallpaper |
 
-- 配布RetroArch初期設定: `Roms/PORTS/GAFE/retroarch.cfg`
-- ゲーム用追加設定: `Roms/PORTS/GAFE/gba-game.cfg`
-- グローバルシェーダー設定: `Roms/PORTS/GAFE/config/global.glslp`
-- GBAディレクトリ用mGBA設定: `Roms/PORTS/GAFE/config/mGBA/GBA.opt`
-- 選択位置、音量、ログ、StockOSバックアップ: `/mnt/mmc/GAFE_HOME`
-- GAFEで変更したRetroArch設定: `/mnt/mmc/GAFE_HOME/settings`
-- GBA ROM: `/mnt/mmc/Roms/GBA`
+## Wallpaper Attribution
 
-`retroarch.cfg`は開発機で動作確認した初期設定とXMB壁紙設定を収録しています。壁紙は`Roms/PORTS/GAFE/assets/xmb-wallpaper.png`に同梱されます。初回ONで設定を`/mnt/mmc/GAFE_HOME/settings`へコピーし、以後はこの永続コピーを使用します。OFF時にはGAFEで変更したグローバルシェーダー設定とGBA用mGBA設定を同じ場所へ保存してからStockOSの設定を復元し、次回ONで保存済みGAFE設定を再適用します。
+The included wallpaper is based on **Chill Mario 2023 ver.** by **Pixel Jeff (Jeff Lin)**.
 
-## 第三者素材
+- Artist page: [Chill Mario 2023 ver.](https://www.artstation.com/artwork/RynnOv)
+- Upstream asset notice: [game-de-it/rg35xx chillmario.md](https://github.com/game-de-it/rg35xx/blob/main/chillmario.md)
+- Local notice: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 
-同梱XMB壁紙はPixel Jeff氏の作品「Chill Mario 2023 ver.」を端末向けに調整したものです。公開配布前に、作者および権利者から再配布許諾を得てください。詳細は[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)を参照してください。
+The wallpaper is not covered by GAFE's MIT License. Rights to the artwork and depicted characters remain with their respective creator and rights holders.
 
-## リリース作成
+## Building a Release
 
-macOSまたはLinuxで次を実行します。
+Run on macOS or Linux:
 
 ```sh
 ./scripts/verify.sh
 ./scripts/build-release.sh
 ```
 
-`dist`にZIPとSHA-256チェックサムが生成されます。
+The release ZIP and SHA-256 checksum are written to `dist`.
+
+## License
+
+GAFE source code is released under the [MIT License](LICENSE). Third-party artwork is covered by its own attribution and terms.

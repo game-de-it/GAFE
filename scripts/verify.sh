@@ -16,8 +16,13 @@ for required in \
     GAFE/gafe_frontend.py GAFE/launch.sh GAFE/gafe-session.sh \
     GAFE/launcher-wrapper.sh GAFE/retroarch.cfg GAFE/gba-game.cfg GAFE/VERSION \
     GAFE/assets/xmb-wallpaper.png GAFE/config/global.glslp \
-    GAFE/config/mGBA/GBA.opt; do
+    GAFE/config/mGBA/GBA.opt GAFE/THIRD_PARTY_NOTICES.md; do
     [ -f "$ROOT/ports/$required" ] || { echo "Missing: $required" >&2; exit 1; }
 done
+
+cmp -s "$ROOT/THIRD_PARTY_NOTICES.md" "$ROOT/ports/GAFE/THIRD_PARTY_NOTICES.md" || {
+    echo "Third-party notice copies do not match" >&2
+    exit 1
+}
 
 echo "GAFE source verification passed"

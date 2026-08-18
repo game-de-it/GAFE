@@ -1,30 +1,38 @@
-# StockOS復旧手順
+# StockOS Recovery
 
-## GAFE画面から
+[日本語版](RECOVERY.ja.md)
 
-1. SELECTを押します。
-2. `StockOSへ戻す`をAで選びます。
-3. 確認画面で`はい`を選び、Aを押します。
+## From GAFE
 
-端末はStockOSランチャーと導入前のRetroArchシェーダー／GBAコア設定を復元して再起動します。
+1. Press SELECT to open the system menu.
+2. Select `Restore StockOS` and press A.
+3. Select `Yes` and press A.
 
-GAFE内で変更した設定は`/mnt/mmc/GAFE_HOME/settings`に保存されるため、再度GAFEを有効にすると復元されます。
+GAFE saves its current settings, restores the original StockOS launcher and RetroArch settings, and reboots automatically.
 
-## SSHから
+## Over SSH
 
 ```sh
 ssh root@DEVICE_IP
 /mnt/mmc/Roms/PORTS/GAFE-OFF.sh
 ```
 
-## OFFスクリプトも実行できない場合
+## Manual Recovery
 
-復旧に使う端末固有バックアップは次の場所にあります。
+The device-specific launcher backup is stored at:
 
 ```text
 /mnt/mmc/GAFE_HOME/backups/launcher.stock.sh
 ```
 
-rootファイルシステムを操作できる環境で、このファイルを`/etc/init.d/launcher.sh`へ実行権限付きで戻し、`/etc/gafe-mode`と`/etc/rafe-mode`を削除します。別個体や別StockOS版のランチャーで代用しないでください。
+From an environment that can access the root filesystem, restore this file to `/etc/init.d/launcher.sh` with executable permissions. Remove `/etc/gafe-mode` and `/etc/rafe-mode`, then reboot. Never substitute a launcher from a different device or StockOS release.
 
-GAFEの起動前検査またはFE起動が失敗した場合も、利用可能なバックアップからStockOSへ自動復旧して再起動します。
+The pre-install RetroArch shader and GBA core settings are stored under:
+
+```text
+/mnt/mmc/GAFE_HOME/backups/retroarch-config
+```
+
+GAFE-specific settings remain under `/mnt/mmc/GAFE_HOME/settings` and are reapplied the next time GAFE-ON runs.
+
+If GAFE startup validation fails, the session attempts to run GAFE-OFF automatically and return to StockOS.

@@ -85,7 +85,7 @@ Settings changed while using GAFE are stored under:
 /mnt/mmc/GAFE_HOME/settings
 ```
 
-This includes the active `retroarch.cfg`, global shader preset, and GBA content-directory mGBA options. GAFE-OFF saves the current GAFE shader and core settings before restoring StockOS. The next GAFE-ON reapplies the saved GAFE settings instead of resetting them to package defaults.
+This includes the active `retroarch.cfg`, global shader preset, and GBA content-directory mGBA options. GAFE-OFF saves the current GAFE shader and core settings before restoring StockOS. The next GAFE-ON reapplies the saved GAFE settings instead of resetting them to package defaults. GAFE also reapplies the saved shader and mGBA options at each session start, after the StockOS runtime has mounted and initialized its RetroArch directories.
 
 ## Restoring StockOS
 

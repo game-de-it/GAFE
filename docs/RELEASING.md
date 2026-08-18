@@ -23,18 +23,19 @@ git remote add origin https://github.com/game-de-it/GAFE.git
 git push -u origin main
 ```
 
-## Publish v0.1.0
+## Publish the current version
 
 ```sh
-git tag -a v0.1.0 -m "GAFE v0.1.0"
-git push origin v0.1.0
+version=$(tr -d '\r\n' < ports/GAFE/VERSION)
+git tag -a "v$version" -m "GAFE v$version"
+git push origin "v$version"
 
-gh release create v0.1.0 \
-  dist/GAFE-v0.1.0.zip \
-  dist/SHA256SUMS \
+gh release create "v$version" \
+  "dist/GAFE-v$version.zip" \
+  "dist/SHA256SUMS" \
   --repo game-de-it/GAFE \
-  --title "GAFE v0.1.0" \
-  --notes-file docs/releases/v0.1.0.md
+  --title "GAFE v$version" \
+  --notes-file "docs/releases/v$version.md"
 ```
 
 Do not publish the tag or release until the final physical-device acceptance test has passed.

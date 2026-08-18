@@ -6,6 +6,8 @@ GAFE_DIR=/mnt/mmc/Roms/PORTS/GAFE
 GAFE_HOME=/mnt/mmc/GAFE_HOME
 STOCK_LAUNCHER=/etc/init.d/launcher.gafe-stock.sh
 ACTION_FILE="$GAFE_HOME/session-action"
+SETTINGS_DIR="$GAFE_HOME/settings"
+RETRO_CONFIG_DIR=/mnt/vendor/deep/retro/config
 
 log() {
     printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
@@ -25,6 +27,23 @@ restore_stock() {
     exit 1
 }
 
+apply_gafe_setting() {
+    saved=$1
+    absent=$2
+    target=$3
+
+    if [ -e "$absent" ]; then
+        rm -f "$target"
+        log "Applied saved absence: $target"
+    elif [ -f "$saved" ]; then
+        install -m 0644 "$saved" "$target"
+        log "Applied saved GAFE setting: $target"
+    else
+        log "Saved GAFE setting is missing: $saved"
+        restore_stock
+    fi
+}
+
 mkdir -p /mnt/vendor /mnt/mmc /mnt/data /mnt/sdcard
 mountpoint -q /mnt/vendor || \
     mount -t ext4 -o rw,noatime,nodiratime /dev/mmcblk0p6 /mnt/vendor || restore_stock
@@ -40,6 +59,14 @@ if [ -x /mnt/vendor/ctrl/mmc_new.sh ]; then
     /mnt/vendor/ctrl/mmc_new.sh add
 fi
 mountpoint -q /mnt/sdcard || mount --bind /mnt/mmc /mnt/sdcard || restore_stock
+
+# StockOS boot helpers may reset RetroArch's active configuration after
+# GAFE-ON runs. Reapply GAFE-owned settings after those helpers finish.
+mkdir -p "$RETRO_CONFIG_DIR/mGBA"
+apply_gafe_setting "$SETTINGS_DIR/global.glslp" \
+    "$SETTINGS_DIR/global.glslp.absent" "$RETRO_CONFIG_DIR/global.glslp"
+apply_gafe_setting "$SETTINGS_DIR/mGBA/GBA.opt" \
+    "$SETTINGS_DIR/mGBA/GBA.opt.absent" "$RETRO_CONFIG_DIR/mGBA/GBA.opt"
 
 for required in \
     "$GAFE_DIR/launch.sh" \

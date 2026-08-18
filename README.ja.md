@@ -85,7 +85,7 @@ GAFE使用中に変更した設定は次の場所へ保存されます。
 /mnt/mmc/GAFE_HOME/settings
 ```
 
-対象は使用中の`retroarch.cfg`、グローバルシェーダー、GBAディレクトリ用mGBA設定です。GAFE-OFFはStockOS設定を復元する前に現在のGAFE設定を保存します。次回GAFE-ONでは配布物の初期値ではなく、保存済みのGAFE設定を再適用します。
+対象は使用中の`retroarch.cfg`、グローバルシェーダー、GBAディレクトリ用mGBA設定です。GAFE-OFFはStockOS設定を復元する前に現在のGAFE設定を保存します。次回GAFE-ONでは配布物の初期値ではなく、保存済みのGAFE設定を再適用します。また、StockOSランタイムによるRetroArchディレクトリのマウントと初期化が完了した後、GAFEセッション開始時にも保存済みのシェーダーとmGBA設定を再適用します。
 
 ## StockOSへ戻す
 

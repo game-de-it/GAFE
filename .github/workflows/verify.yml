@@ -13,4 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Verify source and build release archive
-        run: ./scripts/release-check.sh
+        run: |
+          ./scripts/verify.sh
+          ./scripts/build-release.sh
+          version=$(tr -d '\r\n' < ports/GAFE/VERSION)
+          unzip -t "dist/GAFE-v${version}.zip"

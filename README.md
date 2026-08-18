@@ -38,6 +38,7 @@ Roms/PORTS/GAFE/
 | START | Open Wi-Fi settings |
 | SELECT | Open the system menu |
 | Hardware volume buttons | Change and save the system volume |
+| SELECT + Volume buttons | Change screen brightness without changing volume |
 
 The system menu provides `Restore StockOS`, `Restart`, and `Shut Down`. Every destructive action opens a confirmation screen with `No` selected by default.
 

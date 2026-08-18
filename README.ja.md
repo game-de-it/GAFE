@@ -38,6 +38,7 @@ Roms/PORTS/GAFE/
 | START | Wi-Fi設定 |
 | SELECT | システムメニュー |
 | 本体音量ボタン | OS側音量の変更と保存 |
+| SELECT + 音量ボタン | 音量を変えずに画面輝度を変更 |
 
 システムメニューには`Restore StockOS`、`Restart`、`Shut Down`があります。重要な操作では確認画面が開き、初期選択は`No`です。
 

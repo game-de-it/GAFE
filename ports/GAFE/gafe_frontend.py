@@ -141,9 +141,11 @@ class VolumeController:
     EVENT = struct.Struct("@llHHi")
     KEY_VOLUMEDOWN = 114
     KEY_VOLUMEUP = 115
+    KEY_SELECT = (310, 314)  # BTN_TL on RGSP; BTN_SELECT on compatible mappings.
 
     def __init__(self):
         self.level = self.load_level()
+        self.select_down = False
         self.apply()
         threading.Thread(target=self.run, name="volume-control", daemon=True).start()
 
@@ -179,24 +181,33 @@ class VolumeController:
     def run(self):
         while True:
             try:
+                self.select_down = False
                 with self.input_device().open("rb", buffering=0) as device:
                     while True:
                         data = device.read(self.EVENT.size)
                         if len(data) != self.EVENT.size:
                             break
                         _, _, event_type, code, value = self.EVENT.unpack(data)
-                        if event_type != 1 or value not in (1, 2):
+                        if event_type != 1:
                             continue
-                        previous = self.level
-                        if code == self.KEY_VOLUMEUP:
-                            self.level = min(31, self.level + 2)
-                        elif code == self.KEY_VOLUMEDOWN:
-                            self.level = max(0, self.level - 2)
-                        if self.level != previous:
-                            self.apply()
-                            self.save()
+                        self.handle_key_event(code, value)
             except OSError:
                 time.sleep(1)
+
+    def handle_key_event(self, code, value):
+        if code in self.KEY_SELECT:
+            self.select_down = value != 0
+            return
+        if value not in (1, 2) or self.select_down:
+            return
+        previous = self.level
+        if code == self.KEY_VOLUMEUP:
+            self.level = min(31, self.level + 2)
+        elif code == self.KEY_VOLUMEDOWN:
+            self.level = max(0, self.level - 2)
+        if self.level != previous:
+            self.apply()
+            self.save()
 
 
 def read_battery():
